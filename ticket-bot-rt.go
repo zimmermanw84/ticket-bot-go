@@ -21,7 +21,6 @@ type TicketBot struct {
 }
 
 func NewTicketBot() TicketBot {
-	fmt.Println("NEW TICKET BOT")
 	// Init slack
 	api := slack.New(os.Getenv("SLACK_APP_KEY"))
 	logger := log.New(os.Stdout, "slack-bot: ", log.Lshortfile|log.LstdFlags)
@@ -118,7 +117,6 @@ func (tb *TicketBot) resolveIssues(ev *slack.MessageEvent, issues chan *github.I
 }
 
 func (tb *TicketBot) handleEvents() {
-	fmt.Println("handleEvents")
 	go tb.rtm.ManageConnection()
 
 	for msg := range tb.rtm.IncomingEvents {
