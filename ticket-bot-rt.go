@@ -68,6 +68,7 @@ func (tb *TicketBot) getIssues(tNums []int, issues chan *github.Issue, errc chan
 
 	for _, n := range tNums {
 		issue, _, err := tb.client.Issues.Get(tb.ctx, "soxhub", "qa", n)
+		fmt.Println(issue)
 		if err != nil {
 			errc <- err
 		} else {
@@ -89,9 +90,25 @@ func (tb *TicketBot) digestIssues(c <-chan *github.Issue) []string {
 func buildIssueResponseMessage(i *github.Issue) string {
 	num := strconv.Itoa(*i.Number)
 	us := mapGHUser(i.Assignees)
-	assignees := strings.Join(us, ", ")
+	fmt.Println(i)
+	message := "#" + num + " - " + i.GetTitle() + " \n" + i.GetHTMLURL() + "\n"
+	state := i.GetState()
+	milestone := i.GetMilestone()
 
-	return "#" + num + " - " + i.GetTitle() + " \n" + i.GetHTMLURL() + "\n" + "Assignees: " + assignees
+	if len(us) > 0 {
+		assignees := strings.Join(us, ", ")
+		message = message + "Assignees: " + assignees + "\n"
+	}
+
+	if len(state) != 0 {
+		message = message + "Status: " + state + "\n"
+	}
+
+	if milestone != nil {
+		message = message + "Milestone: " + milestone.GetTitle() + "\n"
+	}
+
+	return message
 }
 
 func mapGHUser(users []*github.User) []string {
@@ -132,7 +149,6 @@ func (tb *TicketBot) handleEvents() {
 			ticketNums := tb.getTicketNumbers(ev.Text)
 			issues := make(chan *github.Issue)
 			errc := make(chan error)
-
 			go tb.getIssues(ticketNums, issues, errc)
 			go tb.resolveIssues(ev, issues, errc)
 
