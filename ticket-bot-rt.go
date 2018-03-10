@@ -63,8 +63,6 @@ func (tb *TicketBot) getTicketNumbers(m string) []int {
 }
 
 func (tb *TicketBot) getIssues(tNums []int, issues chan *github.Issue, errc chan error) {
-	defer close(issues)
-	defer close(errc)
 
 	for _, n := range tNums {
 		issue, _, err := tb.client.Issues.Get(tb.ctx, "soxhub", "qa", n)
@@ -75,6 +73,9 @@ func (tb *TicketBot) getIssues(tNums []int, issues chan *github.Issue, errc chan
 			issues <- issue
 		}
 	}
+
+	defer close(issues)
+	defer close(errc)
 }
 
 func (tb *TicketBot) digestIssues(c <-chan *github.Issue) []string {
